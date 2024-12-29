@@ -1,10 +1,9 @@
 const { Schema, model } = require("mongoose");
 
-//Criação do modelo de entidade
-const taskSchema = Schema({
+const TaskSchema = Schema({
     description: {
         type: String,
-        require: true,
+        required: true,
     },
     isCompleted: {
         type: Boolean,
@@ -12,8 +11,6 @@ const taskSchema = Schema({
     },
 });
 
-//Dando push na entidade para criar de fato a entidade no BD
-
-const TaskModel = model("Task", taskSchema);
+const TaskModel = model("Task", TaskSchema);
 
 module.exports = TaskModel;
