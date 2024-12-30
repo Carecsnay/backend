@@ -35,6 +35,17 @@ app.post("/tasks", async (req, res) => {
     }
 });
 
+app.delete("/tasks/:id", async (req, res) => {
+    try {
+        const taskID = req.params.id; //id da tarefa
+        const deleteTask = await TaskModel.findByIdAndDelete(taskID); //Método do mongoose para deletar algo do banco de dados usando o ID como referencia
+
+        res.status(200).send(deleteTask);
+    } catch (error) {
+        res.status(500).send({ message: "Tarefa não encontrada!", error: error.message });
+    }
+});
+
 //Função executada quando iniciar o servidor
 app.listen(8000, () => {
     console.log("Listening on port 8000!");
