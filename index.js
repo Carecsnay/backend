@@ -52,6 +52,35 @@ app.post("/tasks", async (req, res) => {
     }
 });
 
+app.patch("/tasks/:id", async (req, res) => {
+    try {
+        const taskId = req.params.id; //ID da tarefa
+        const taskData = req.body; //Conteúdo da tarefa
+
+        const taskToUpdate = await TaskModel.findById(taskId);
+        const allowedUpdate = ["isCompleted"]; //único campo que permite atualização
+        const requestedUpdates = Object.keys(taskData); //vai pegar o atributo (key) "description" e "isCompleted" de cada tarefa
+
+        // O loop 'for' percorre cada item na lista `requestedUpdates`.
+        for (let update of requestedUpdates) {
+            // Verifica se a chave atual (`update`) está contida na lista de chaves permitidas (`allowedUpdate`).
+            if (allowedUpdate.includes(update)) {
+                // Se a chave (isCompleted) estiver na lista, significa que este campo pode ser atualizado.
+                // Então atualizamos o valor correspondente da tarefa com o novo valor obtido da solicitação PATCH.
+                taskToUpdate[update] = taskData[update];
+            } else {
+                res.status(500).send("Campo description não pode ser editado!");
+            }
+        }
+
+        await taskToUpdate.save();
+
+        res.status(200).send(taskToUpdate);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
 app.delete("/tasks/:id", async (req, res) => {
     try {
         const taskId = req.params.id; //id da tarefa
