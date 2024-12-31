@@ -24,6 +24,23 @@ app.get("/tasks", async (req, res) => {
     }
 });
 
+//recuperando uma tarefa especifica (pelo ID)
+app.get("/tasks/:id", async (req, res) => {
+    try {
+        const taskId = req.params.id; //pegando ID da tarefa
+        const task = await TaskModel.findById(taskId); //buscando a tarefa pelo ID
+
+        if (!task) {
+            return res.status(404).send("A tarefa não foi encontrada!");
+        } else {
+            return res.status(200).send(task); //retornando a tarefa encontrada
+        }
+    } catch (error) {
+        //Tratamento para caso o banco esteja offline ou algo do tipo
+        res.status(500).send(error.message);
+    }
+});
+
 app.post("/tasks", async (req, res) => {
     try {
         const newTask = new TaskModel(req.body); //Criando uma nova tarefa, com o corpo da requisição (description e isCompleted)
@@ -38,11 +55,16 @@ app.post("/tasks", async (req, res) => {
 app.delete("/tasks/:id", async (req, res) => {
     try {
         const taskId = req.params.id; //id da tarefa
+        const taskToDelete = await TaskModel.findById(taskId);
 
-        const deleteTask = await TaskModel.findByIdAndDelete(taskId); //Método do mongoose para deletar algo do banco de dados usando o ID como referencia
-        res.status(200).send(deleteTask);
+        if (!taskToDelete) {
+            return res.status(404).send("Não foi possível deletar, pois a tarefa não foi encontrada!");
+        } else {
+            const deleteTask = await TaskModel.findByIdAndDelete(taskId); //Método do mongoose para deletar algo do banco de dados usando o ID como referencia
+            res.status(200).send(deleteTask);
+        }
     } catch (error) {
-        res.status(500).send({ message: "Tarefa não encontrada!", error: error.message });
+        res.status(500).send(error.message);
     }
 });
 
