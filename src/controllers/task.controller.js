@@ -1,7 +1,7 @@
 // para cada router, terá um controller.
 
 const TaskModel = require("../models/task.model");
-const { notFoundError } = require("../errors/mongodb.errors");
+const { notFoundError, objectIdError } = require("../errors/mongodb.errors");
 const { notAllowedEditError } = require("../errors/general.errors");
 
 class TaskController {
@@ -19,7 +19,7 @@ class TaskController {
             this.res.status(200).send(tasks);
         } catch (error) {
             //Tratamento para caso o banco esteja offline ou algo do tipo
-            this.res.status(500).send(error.message);
+            return objectIdError(this.res);
         }
     }
 
@@ -35,7 +35,7 @@ class TaskController {
             }
         } catch (error) {
             //Tratamento para caso o banco esteja offline ou algo do tipo
-            this.res.status(500).send(error.message);
+            return objectIdError(this.res);
         }
     }
 
@@ -46,7 +46,7 @@ class TaskController {
             await newTask.save(); //usa o mongoose para salvar uma nova tarefa no banco de dados.
             this.res.status(201).send(newTask); //status 201 para criação de um novo arquivo no banco de dados
         } catch (error) {
-            this.res.status(500).send(error.message);
+            return objectIdError(this.res);
         }
     }
     async update() {
@@ -78,7 +78,7 @@ class TaskController {
                 this.res.status(200).send(taskToUpdate);
             }
         } catch (error) {
-            this.res.status(500).send(error.message);
+            return objectIdError(this.res);
         }
     }
     async delete() {
@@ -93,7 +93,7 @@ class TaskController {
                 this.res.status(200).send(deleteTask);
             }
         } catch (error) {
-            this.res.status(500).send(error.message);
+            return objectIdError(this.res);
         }
     }
 }
