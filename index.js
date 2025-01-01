@@ -4,100 +4,16 @@ const dotEnv = require("dotenv");
 
 //arquivos
 const connectToDatabase = require("./src/database/mongoose.database");
-const TaskModel = require("./src/models/task.model");
+const taskRouter = require("./src/routers/task.routers");
 
 dotEnv.config(); //inicializando o dotEnv (é necessário primeiro chamar ela antes do banco de dados para usarmos aquela template string do mongoose.)
 const app = express(); //inicializando express
 app.use(express.json()); //fala pro express que vamos receber json nas requisições, já converte o json para objeto javascript automaticamente
 
 connectToDatabase();
-
-app.get("/tasks", async (req, res) => {
-    try {
-        //Usa o task model para procurar determinado registro no banco baseado na condição
-        const tasks = await TaskModel.find({}); //pegar todas as tarefas
-        //Tudo que enviamos para o send tem que ser em formato JSON
-        res.status(200).send(tasks);
-    } catch (error) {
-        //Tratamento para caso o banco esteja offline ou algo do tipo
-        res.status(500).send(error.message);
-    }
-});
-
-//recuperando uma tarefa especifica (pelo ID)
-app.get("/tasks/:id", async (req, res) => {
-    try {
-        const taskId = req.params.id; //pegando ID da tarefa
-        const task = await TaskModel.findById(taskId); //buscando a tarefa pelo ID
-
-        if (!task) {
-            return res.status(404).send("A tarefa não foi encontrada!");
-        } else {
-            return res.status(200).send(task); //retornando a tarefa encontrada
-        }
-    } catch (error) {
-        //Tratamento para caso o banco esteja offline ou algo do tipo
-        res.status(500).send(error.message);
-    }
-});
-
-app.post("/tasks", async (req, res) => {
-    try {
-        const newTask = new TaskModel(req.body); //Criando uma nova tarefa, com o corpo da requisição (description e isCompleted)
-
-        await newTask.save(); //usa o mongoose para salvar uma nova tarefa no banco de dados.
-        res.status(201).send(newTask); //status 201 para criação de um novo arquivo no banco de dados
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-});
-
-app.patch("/tasks/:id", async (req, res) => {
-    try {
-        const taskId = req.params.id; //ID da tarefa
-        const taskData = req.body; //Conteúdo da tarefa
-
-        const taskToUpdate = await TaskModel.findById(taskId);
-        const allowedUpdate = ["isCompleted"]; //único campo que permite atualização
-        const requestedUpdates = Object.keys(taskData); //vai pegar o atributo (key) "description" e "isCompleted" de cada tarefa
-
-        // O loop 'for' percorre cada item na lista `requestedUpdates`.
-        for (let update of requestedUpdates) {
-            // Verifica se a chave atual (`update`) está contida na lista de chaves permitidas (`allowedUpdate`).
-            if (allowedUpdate.includes(update)) {
-                // Se a chave (isCompleted) estiver na lista, significa que este campo pode ser atualizado.
-                // Então atualizamos o valor correspondente da tarefa com o novo valor obtido da solicitação PATCH.
-                taskToUpdate[update] = taskData[update];
-            } else {
-                res.status(500).send("Campo description não pode ser editado!");
-            }
-        }
-
-        await taskToUpdate.save();
-
-        res.status(200).send(taskToUpdate);
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-});
-
-app.delete("/tasks/:id", async (req, res) => {
-    try {
-        const taskId = req.params.id; //id da tarefa
-        const taskToDelete = await TaskModel.findById(taskId);
-
-        if (!taskToDelete) {
-            return res.status(404).send("Não foi possível deletar, pois a tarefa não foi encontrada!");
-        } else {
-            const deleteTask = await TaskModel.findByIdAndDelete(taskId); //Método do mongoose para deletar algo do banco de dados usando o ID como referencia
-            res.status(200).send(deleteTask);
-        }
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-});
-
 //Função executada quando iniciar o servidor
+
+app.use("/tasks", taskRouter); // a partir daqui, vamos utilizar essas rotas a quando acessamos o "/tasks" (desestruturamos as rotas para "task.routers.js")
 app.listen(8000, () => {
     console.log("Listening on port 8000!");
 });
