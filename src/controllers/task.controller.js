@@ -1,7 +1,7 @@
 // para cada router, terá um controller.
 
 const TaskModel = require("../models/task.model");
-const { successfulOperation, internalError, notFoundError, resourceCreated } = require("../errors/mongodb.errors");
+const { notFoundError } = require("../errors/mongodb.errors");
 
 class TaskController {
     constructor(req, res) {
@@ -90,7 +90,6 @@ class TaskController {
             } else {
                 const deleteTask = await TaskModel.findByIdAndDelete(taskId); //Método do mongoose para deletar algo do banco de dados usando o ID como referencia
                 this.res.status(200).send(deleteTask);
-                return successfulOperation(this.res);
             }
         } catch (error) {
             this.res.status(500).send(error.message);
