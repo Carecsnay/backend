@@ -1,17 +1,11 @@
 const express = require("express");
 const router = express.Router();
+
 const TaskModel = require("../models/task.model");
+const TaskController = require("../controllers/task.controller");
 
 router.get("/", async (req, res) => {
-    try {
-        //Usa o task model para procurar determinado registro no banco baseado na condição
-        const tasks = await TaskModel.find({}); //pegar todas as tarefas
-        //Tudo que enviamos para o send tem que ser em formato JSON
-        res.status(200).send(tasks);
-    } catch (error) {
-        //Tratamento para caso o banco esteja offline ou algo do tipo
-        res.status(500).send(error.message);
-    }
+    return new TaskController(req, res).getTasks();
 });
 
 //recuperando uma tarefa especifica (pelo ID)
