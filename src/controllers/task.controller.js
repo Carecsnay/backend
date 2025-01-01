@@ -2,6 +2,7 @@
 
 const TaskModel = require("../models/task.model");
 const { notFoundError } = require("../errors/mongodb.errors");
+const { notAllowedEditError } = require("../errors/general.errors");
 
 class TaskController {
     constructor(req, res) {
@@ -69,7 +70,7 @@ class TaskController {
                         // Então atualizamos o valor correspondente da tarefa com o novo valor obtido da solicitação PATCH.
                         taskToUpdate[update] = taskData[update];
                     } else {
-                        this.res.status(500).send("Campo description não pode ser editado!");
+                        return notAllowedEditError(this.res);
                     }
                 }
                 await taskToUpdate.save();
