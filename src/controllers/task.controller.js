@@ -1,6 +1,7 @@
 // para cada router, terá um controller.
 
 const TaskModel = require("../models/task.model");
+const { successfulOperation, internalError, notFoundError, resourceCreated } = require("../errors/mongodb.errors");
 
 class TaskController {
     constructor(req, res) {
@@ -27,7 +28,7 @@ class TaskController {
             const task = await TaskModel.findById(taskId); //buscando a tarefa pelo ID
 
             if (!task) {
-                return this.res.status(404).send("A tarefa não foi encontrada!");
+                return notFoundError(this.res);
             } else {
                 return this.res.status(200).send(task); //retornando a tarefa encontrada
             }
@@ -53,24 +54,28 @@ class TaskController {
             const taskData = this.req.body; //Conteúdo da tarefa
 
             const taskToUpdate = await TaskModel.findById(taskId);
-            const allowedUpdate = ["isCompleted"]; //único campo que permite atualização
-            const requestedUpdates = Object.keys(taskData); //vai pegar o atributo (key) "description" e "isCompleted" de cada tarefa
 
-            // O loop 'for' percorre cada item na lista `requestedUpdates`.
-            for (const update of requestedUpdates) {
-                // Verifica se a chave atual (`update`) está contida na lista de chaves permitidas (`allowedUpdate`).
-                if (allowedUpdate.includes(update)) {
-                    // Se a chave (isCompleted) estiver na lista, significa que este campo pode ser atualizado.
-                    // Então atualizamos o valor correspondente da tarefa com o novo valor obtido da solicitação PATCH.
-                    taskToUpdate[update] = taskData[update];
-                } else {
-                    this.res.status(500).send("Campo description não pode ser editado!");
+            if (!taskToUpdate) {
+                return notFoundError(this.res);
+            } else {
+                const allowedUpdate = ["isCompleted"]; //único campo que permite atualização
+                const requestedUpdates = Object.keys(taskData); //vai pegar o atributo (key) "description" e "isCompleted" de cada tarefa
+
+                // O loop 'for' percorre cada item na lista `requestedUpdates`.
+                for (const update of requestedUpdates) {
+                    // Verifica se a chave atual (`update`) está contida na lista de chaves permitidas (`allowedUpdate`).
+                    if (allowedUpdate.includes(update)) {
+                        // Se a chave (isCompleted) estiver na lista, significa que este campo pode ser atualizado.
+                        // Então atualizamos o valor correspondente da tarefa com o novo valor obtido da solicitação PATCH.
+                        taskToUpdate[update] = taskData[update];
+                    } else {
+                        this.res.status(500).send("Campo description não pode ser editado!");
+                    }
                 }
+                await taskToUpdate.save();
+
+                this.res.status(200).send(taskToUpdate);
             }
-
-            await taskToUpdate.save();
-
-            this.res.status(200).send(taskToUpdate);
         } catch (error) {
             this.res.status(500).send(error.message);
         }
@@ -81,10 +86,11 @@ class TaskController {
             const taskToDelete = await TaskModel.findById(taskId);
 
             if (!taskToDelete) {
-                return this.res.status(404).send("Não foi possível deletar, pois a tarefa não foi encontrada!");
+                return notFoundError(this.res);
             } else {
                 const deleteTask = await TaskModel.findByIdAndDelete(taskId); //Método do mongoose para deletar algo do banco de dados usando o ID como referencia
                 this.res.status(200).send(deleteTask);
+                return successfulOperation(this.res);
             }
         } catch (error) {
             this.res.status(500).send(error.message);
