@@ -9,7 +9,7 @@
     "engines": {
         "node": "v22.12.0"
     },
-    "author": "",
+    "author": "Bruno with -> FSC",
     "license": "ISC",
     "description": "",
     "dependencies": {
