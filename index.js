@@ -14,6 +14,7 @@ connectToDatabase();
 //Função executada quando iniciar o servidor
 
 app.use("/tasks", taskRouter); // a partir daqui, vamos utilizar essas rotas a quando acessamos o "/tasks" (desestruturamos as rotas para "task.routers.js")
-app.listen(8000, () => {
-    console.log("Listening on port 8000!");
-});
+
+const port = process.env.PORT || 8000;
+
+app.listen(port, () => console.log(`Listening on port ${port}!`));
